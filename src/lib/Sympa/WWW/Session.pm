@@ -727,6 +727,10 @@ sub _generic_get_cookie {
 
     if ($http_cookie and $http_cookie =~ /\S+/g) {
         my %cookies = CGI::Cookie->parse($http_cookie);
+        my @x = %cookies;
+        
+        $log->syslog('info', 'Cookies: %s', join(' - ', @x));
+        
         foreach my $cookie (values %cookies) {
             next unless $cookie->name eq $cookie_name;
             $log->syslog('info', 'Parse cookie: %s', $cookie->value);
