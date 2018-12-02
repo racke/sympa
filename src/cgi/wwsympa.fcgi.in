@@ -1138,10 +1138,10 @@ while ($query = CGI::Fast->new) {
 
     $cookie_domain = Sympa::WWW::Tools::get_cookie_domain($robot);
 
-    $log->syslog('info', 'Cookie domain: %s', $cookie_domain);
-            
-    $log->{level} = Conf::get_robot_conf($robot, 'log_level');
+     $log->{level} = Conf::get_robot_conf($robot, 'log_level');
 
+        $log->syslog('info', 'Cookie domain: %s', $cookie_domain);
+        
     ## Sympa parameters in $param->{'conf'}
     $param->{'conf'} = {};
     foreach my $p (
