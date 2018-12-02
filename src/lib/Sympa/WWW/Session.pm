@@ -534,6 +534,7 @@ sub list_sessions {
 ## Subroutine to get session cookie value
 sub get_session_cookie {
     my $http_cookie = shift;
+    $log->syslog("Get session cookie: %s", $http_cookie);
     return Sympa::WWW::Session::_generic_get_cookie($http_cookie,
         'sympa_session');
 }
