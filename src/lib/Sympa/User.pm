@@ -735,6 +735,7 @@ sub add_global_user {
     ## an salt of 'undef' means generate a new random one
     ## avoid rehashing passwords that are already hash strings
     if ($values->{'password'}) {
+        $log->syslog('info', "Adding password %s",  $values->{'password'});
         if (defined(hash_type($values->{'password'}))) {
             $log->syslog(
                 'err',
