@@ -1265,7 +1265,8 @@ while ($query = CGI::Fast->new) {
             'ajax'   => $ajax
         }
     );
-
+      $log->syslog('info',  'Cookie value from %s: %s', $ENV{'HTTP_COOKIE'), $session->cookie);
+    wwslog('info', 'Cookie value from %s: %s', $ENV{'HTTP_COOKIE'), $session->cookie);
     # Getting rid of the environment variable to make sure it won't be
     # affected to another anonymous session.
     undef $ENV{'HTTP_COOKIE'};
