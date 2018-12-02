@@ -542,7 +542,7 @@ sub get_session_cookie {
 ## Set user $email cookie, ckecksum use $secret, expire=(now|session|#sec)
 ## domain=(localhost|<a domain>)
 sub set_cookie {
-    $log->syslog('debug', '(%s, %s, %s, %s)', @_);
+    $log->syslog('info', '(%s, %s, %s, %s)', @_);
     my $self    = shift;
     my $dom     = shift;
     my $expires = shift;
