@@ -573,6 +573,7 @@ sub set_cookie {
     );
 
     # Send cookie to the client.
+    $log->syslog('info', 'Our cookie for %s is %s', $dom, $cookie->as_string);
     printf "Set-Cookie: %s\n", $cookie->as_string;
 }
 
@@ -727,6 +728,7 @@ sub _generic_get_cookie {
         my %cookies = CGI::Cookie->parse($http_cookie);
         foreach my $cookie (values %cookies) {
             next unless $cookie->name eq $cookie_name;
+            $log->syslog('info', 'Parse cookie: %s', $cookie->value);
             return ($cookie->value);
         }
     }
