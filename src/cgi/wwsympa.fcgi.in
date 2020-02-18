@@ -647,7 +647,7 @@ our %required_args = (
 );
 
 ## Defines the required privileges to access privileged actions
-## You can define a set ofequiivalent privileges in the ARRAYREF
+## You can define a set of equivalent privileges in the ARRAYREF
 our %required_privileges = (
     'admin'                    => ['owner', 'editor'],
     'arc_delete'               => ['owner'],
@@ -1265,7 +1265,7 @@ while ($query = CGI::Fast->new) {
     );
 
     # Getting rid of the environment variable to make sure it won't be
-    # affected to another anonymous session.
+    # affected by another anonymous session.
     undef $ENV{'HTTP_COOKIE'};
     unless (defined $session) {
         Sympa::send_notify_to_listmaster($robot,
