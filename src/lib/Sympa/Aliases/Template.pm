@@ -27,6 +27,7 @@ package Sympa::Aliases::Template;
 use strict;
 use warnings;
 use English qw(-no_match_vars);
+use System::Command;
 
 use Conf;
 use Sympa::Constants;
@@ -123,7 +124,10 @@ sub add {
 
     # Newaliases
     unless ($self->{file}) {
+        #my ( $pid, $in, $out, $err ) = System::Command->spawn(alias_wrapper($list), '--domain=' . $list->{'domain'});
+        $log->syslog('info', 'Calling alias wrapper: %s', join(' ', alias_wrapper($list), '--domain=' . $list->{'domain'}));
         system(alias_wrapper($list), '--domain=' . $list->{'domain'});
+
         if ($CHILD_ERROR == -1) {
             $log->syslog('err', 'Failed to execute sympa_newaliases: %m');
             return undef;
@@ -202,6 +206,7 @@ sub del {
 
     # Newaliases
     unless ($self->{file}) {
+        $log->syslog('info', 'Calling alias wrapper: %s', join(' ', alias_wrapper($list), '--domain=' . $list->{'domain'}));
         system(alias_wrapper($list), '--domain=' . $list->{'domain'});
         if ($CHILD_ERROR == -1) {
             $log->syslog('err', 'Failed to execute sympa_newaliases: %m');
