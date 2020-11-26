@@ -89,7 +89,8 @@ unless (
         'upgrade_config_location',      'role=s',
         'dump_users',                   'restore_users',
         'open_list=s',                  'show_pending_lists=s',
-        'notify',                       'rebuildarc=s'
+        'notify',                       'rebuildarc=s',
+        'template=s',
     )
 ) {
     pod2usage(-exitval => 1, -output => \*STDERR);
@@ -428,10 +429,12 @@ if ($main::options{'dump'} or $main::options{'dump_users'}) {
     }
     exit 0 unless @robots;
 
+    my $template = $main::options{'template'} || '%s/sympa_aliases.%s';
+
     # There may be multiple aliases files.  Give each of them suffixed
     # name.
     my ($basename, %robots_of, %sympa_aliases);
-    $basename = sprintf '%s/sympa_aliases.%s', $Conf::Conf{'tmpdir'}, $PID;
+    $basename = sprintf $template, $Conf::Conf{'tmpdir'}, $PID;
 
     foreach my $robot (@robots) {
         my $file = Conf::get_robot_conf($robot, 'sendmail_aliases');
