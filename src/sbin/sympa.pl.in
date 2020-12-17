@@ -100,6 +100,14 @@ if ($main::options{'help'}) {
     printf "Sympa %s\n", Sympa::Constants::VERSION;
     exit 0;
 }
+
+# support options with dashes
+for my $input_opt (keys %main:options) {
+    my $new_opt = $input_opt;
+    $new_opt =~ s/-/_/g;
+    $main::options{$new_opt} = delete $main::options{$input_opt};
+}
+
 $Conf::sympa_config = $main::options{config};
 
 if ($main::options{'debug'}) {
