@@ -1,0 +1,157 @@
+#! /usr/bin/env perl
+# Run: `github-release-message.pl sympa-community/sympa 6.2.70`.
+# Based on gist 
+use strict;
+use warnings;
+
+use English qw(-no_match_vars);
+use Getopt::Long qw(GetOptions);
+use JSON;
+use LWP;
+use LWP::Protocol::https qw();
+use MIME::Entity;
+use Text::Markdown qw();
+use Email::Sender::Simple qw(sendmail);
+use Email::Sender::Transport::SMTP ();
+use File::Spec qw();
+use File::HomeDir qw();
+use YAML qw(LoadFile);
+use Data::Dumper::Concise qw(Dumper);
+
+my $debug = 0;
+my $test = 0;
+my $config_file;
+my $config_name = 'github-release';
+my $from_address;
+my $to_address;
+
+unless (GetOptions(
+    "config|c=s", \$config_file,
+    "debug|d" => \$debug,
+    "dry-run|n" => \$test,
+    "from|f=s" =>  \$from_address,
+    "to|t=s" => \$to_address,
+)) {
+    die;
+}
+
+my $config = read_config($config_file);
+my $smtp_config = $config->{'smtp'};
+my $email_config = $config->{'email'} // {};
+my $repository_name = shift or die "Specify repository\n";
+my $tag             = shift or die "Specify tag\n";
+
+if (@ARGV) {
+    $to_address = shift;
+}
+elsif (! $to_address && exists $email_config->{to}) {
+    $to_address = $email_config->{to};
+}
+
+unless ($to_address) {
+    die "$0: missing recipient email address.\n";
+}
+
+my $request = HTTP::Request->new(
+    GET => sprintf(
+        'https://api.github.com/repos/%s/releases/tags/%s',
+        $repository_name, $tag
+    )
+);
+my $ua       = LWP::UserAgent->new;
+my $response = $ua->request($request);
+my $json     = $response->decoded_content;
+my $release  = decode_json($json);
+
+# wrap links into <a href="...">...</a>
+$release->{body} .= "\n";
+$release->{body} =~ s#(https?://\S+?)(\.*[\s\<,])#<a href="$1">$1</a>$2#igs;
+
+my $plain = sprintf "%s\n====\n\n%s", $release->{name}, $release->{body};
+Encode::_utf8_off($plain);
+
+my $html =
+    sprintf
+    "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\"/>\n<title>%s</title>\n</head>\n<body>%s</body>\n</html>",
+    ($release->{name} =~ s/</\&lt;/gr),
+    Text::Markdown->new->markdown($plain);
+
+my $email = MIME::Entity->build(
+    Type       => 'multipart/alternative',
+    Encoding   => '8BIT',
+    From => $from_address,
+    To => $to_address,
+    Subject    => $release->{name},
+    'X-Mailer' => sprintf('sympa-%s', $release->{tag_name}),
+    Data => [],
+);
+
+$email->attach(
+    Type     => 'text/plain; Charset=UTF-8',
+    Encoding => '8BIT',
+    Data     => $plain
+);
+$email->attach(
+    Type     => 'text/html; Charset=UTF-8',
+    Encoding => '8BIT',
+    Data     => $html
+);
+
+if ($test) {
+    print $email->as_string;
+    exit 0;
+}
+
+my %transport_settings = (
+    ssl => 'starttls',
+);
+
+while (my ($var, $value) = each %{$config->{smtp}}) {
+    $transport_settings{$var} = $value;
+}
+
+
+if ($debug) {
+    $transport_settings{debug} = 1;
+}
+
+my $transport = Email::Sender::Transport::SMTP->new(
+    %transport_settings
+);
+
+try {
+    sendmail($email, { transport => $transport });
+} catch {
+    die "Error sending email: $_";
+};
+
+sub read_config {
+    my $file = shift;
+    my $configout;
+
+    unless ($file) {
+        # possible locations
+        my @locs = (
+            File::Spec->catfile(File::Spec->curdir, "$config_name.yml"),
+            File::Spec->catfile(File::HomeDir->my_home, ".$config_name.yml"),
+        );
+
+        for my $loc (@locs) {
+            if (-r $loc) {
+                $file = $loc;
+                last;
+            }
+        }
+
+        unless($file) {
+            die(sprintf("$0: No configuration file found in the following locations: %s\n",
+                        join(', ', @locs)
+                    ));
+        }
+    }
+
+    $configout = LoadFile($file);
+    return $configout;
+}
+
+__END__
