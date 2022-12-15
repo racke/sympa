@@ -52,6 +52,15 @@ unless ($to_address) {
     die "$0: missing recipient email address.\n";
 }
 
+unless ($from_address) {
+    if (exists $email_config->{from}) {
+        $from_address = $email_config->{from};
+    }
+    else {
+        die "$0: missing sender email address.\n";
+    }
+}
+
 my $request = HTTP::Request->new(
     GET => sprintf(
         'https://api.github.com/repos/%s/releases/tags/%s',
