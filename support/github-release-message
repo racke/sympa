@@ -1,5 +1,5 @@
 #! /usr/bin/env perl
-# Run: `github-release-message.pl sympa-community/sympa 6.2.70`.
+# Run: `github-release-message.pl sympa-community/sympa 6.2.70 announce@sympa.community`.
 # Based on gist 
 use strict;
 use warnings;
