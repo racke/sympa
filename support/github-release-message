@@ -39,8 +39,16 @@ unless (GetOptions(
 my $config = read_config($config_file);
 my $smtp_config = $config->{'smtp'};
 my $email_config = $config->{'email'} // {};
-my $repository_name = shift or die "Specify repository\n";
-my $tag             = shift or die "Specify tag\n";
+my $repository_name = shift;
+my $tag             = shift;
+
+unless ($repository_name) {
+    die "$0: Please specify repository, e.g. sympa-community/sympa.\n";
+}
+
+unless ($tag) {
+    die "$0: Please specify tag, e.g. 6.2.70.\n";
+}
 
 if (@ARGV) {
     $to_address = shift;
