@@ -15,6 +15,7 @@ use Email::Sender::Simple qw(sendmail);
 use Email::Sender::Transport::SMTP ();
 use File::Spec qw();
 use File::HomeDir qw();
+use Try::Tiny qw();
 use YAML qw(LoadFile);
 use Data::Dumper::Concise qw(Dumper);
 
