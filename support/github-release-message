@@ -69,6 +69,11 @@ my $request = HTTP::Request->new(
 );
 my $ua       = LWP::UserAgent->new;
 my $response = $ua->request($request);
+
+if ($response->code != 200) {
+    die sprintf "%s: Failed to retrieve tag %s (HTTP code %d).\n", $0, $tag, $response->code;
+}
+
 my $json     = $response->decoded_content;
 my $release  = decode_json($json);
 
