@@ -4710,17 +4710,20 @@ sub _review_user {
                     ;    #FIXME: Update user?
                 } elsif ($list->add_list_admin($role, $user)) {
                     # Notify the new list owner/editor
-                    Sympa::send_notify_to_user(
-                        $list,
-                        'added_as_listadmin',
-                        $email,
-                        {   admin_type => $role,
-                            delegator  => $param->{'user'}{'email'}
-                        }
-                    );
-                    Sympa::WWW::Report::notice_report_web('user_notified',
-                        {'notified_user' => $email},
-                        $param->{'action'});
+                    if ($user->{'reception'} ne 'nomail') {
+                        Sympa::send_notify_to_user(
+                            $list,
+                            'added_as_listadmin',
+                            $email,
+                            {   admin_type => $role,
+                                delegator  => $param->{'user'}{'email'}
+                            }
+                        );
+
+                        Sympa::WWW::Report::notice_report_web('user_notified',
+                            {'notified_user' => $email},
+                                                              $param->{'action'});
+                    }
                 } else {
                     #FIXME: Report error
                 }
