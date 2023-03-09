@@ -37,6 +37,7 @@ use Sympa::Log;
 use Sympa::Spool::Outgoing;
 use Sympa::Spool::Topic;
 use Sympa::Tools::Data;
+use Sympa::Tools::Text;
 use Sympa::Tracking;
 
 use base qw(Sympa::Spindle);
@@ -416,7 +417,13 @@ sub _mail_message {
         if $message->{'smime_crypted'};
 
     # Overwrite original envelope sender.  It is REQUIRED for delivery.
-    $message->{envelope_sender} = Sympa::get_address($list, 'return_path');
+    my @from = Mail::Address->parse($message->get_header('From'));
+    if (@from and $from[0] and $from[0]->address) {
+        $message->{envelope_sender} = Sympa::Tools::Text::canonic_email($from[0]->address);
+    }
+    else {
+        $message->{envelope_sender} = Sympa::get_address($list, 'return_path');
+    }
 
     return Sympa::Spool::Outgoing->new->store($message, $rcpt, tag => $tag)
         || undef;
