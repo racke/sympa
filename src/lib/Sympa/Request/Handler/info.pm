@@ -60,6 +60,10 @@ sub _twist {
         $data->{$key} = $list->{'admin'}{$key};
     }
 
+    ## Owners and Editors
+    $data->{owner} = $list->get_admins('owner');
+    $data->{editor} = $list->get_admins('editor');
+
     ## Set title in the current language
     foreach my $p ('subscribe', 'unsubscribe', 'send', 'review') {
         my $scenario = Sympa::Scenario->new($list, $p);
